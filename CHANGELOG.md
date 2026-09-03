@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Stream query results row by row instead of buffering the whole result set, and add an optional per-data-source response size limit ([#140](https://github.com/grafana/grafana-postgresql-datasource/issues/140))
+
 ## 13.0.2
 
 - Bump go v1.26.7 and grafana-plugin-sdk-go v0.296.4 ([#119](https://github.com/grafana/grafana-postgresql-datasource/pull/119))
