@@ -20,8 +20,6 @@ export interface PostgresOptions extends SQLOptions {
   postgresVersion?: number;
   timescaledb?: boolean;
   enableSecureSocksProxy?: boolean;
-  // Maximum total size, in bytes, of a single query's result set. 0 or unset
-  // falls back to the server-wide dataproxy response_limit.
   responseLimitBytes?: number;
 }
 

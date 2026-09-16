@@ -60,9 +60,7 @@ type JsonData struct {
 	SecureDSProxyUsername   string `json:"secureSocksProxyUsername"`
 	AllowCleartextPasswords bool   `json:"allowCleartextPasswords"`
 	AuthenticationType      string `json:"authenticationType"`
-	// ResponseLimitBytes caps the total size, in bytes, of a single query's
-	// result set. 0 (the default) disables the cap.
-	ResponseLimitBytes int64 `json:"responseLimitBytes"`
+	ResponseLimitBytes      int64  `json:"responseLimitBytes"`
 }
 
 type DataSourceInfo struct {
