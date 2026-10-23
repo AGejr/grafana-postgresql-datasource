@@ -204,8 +204,8 @@ func (e *DataSourceHandler) QueryData(ctx context.Context, req *backend.QueryDat
 
 // queryToDataFrame runs query and streams the result straight into a data.Frame,
 // one row at a time, instead of buffering the whole result set in memory first.
-// It stops reading as soon as the row-count or response-byte limit is hit,
-// appending a warning notice to the frame. It also returns the field
+// It stops collecting rows as soon as the row-count or response-byte limit is
+// hit, appending a warning notice to the frame. It also returns the field
 // descriptions of the first row-returning result, which the caller needs to
 // build the query model.
 func (e *DataSourceHandler) queryToDataFrame(ctx context.Context, query string) (*data.Frame, []pgconn.FieldDescription, error) {
@@ -213,10 +213,6 @@ func (e *DataSourceHandler) queryToDataFrame(ctx context.Context, query string) 
 	if err != nil {
 		return nil, nil, backend.DownstreamErrorf("failed to acquire connection: %w", err)
 	}
-	// When we stop early (a limit was hit) the connection still has unread rows
-	// queued. We deliberately do not drain them - mrr.Close()/rr.Close() would
-	// read them all into memory, which is exactly what the limit exists to
-	// prevent. Release() sees the busy connection and destroys it instead.
 	defer c.Release()
 
 	mrr := c.Conn().PgConn().Exec(ctx, query)
@@ -239,21 +235,19 @@ func (e *DataSourceHandler) queryToDataFrame(ctx context.Context, query string) 
 			continue
 		}
 
-		limited := false
 		for rr.NextRow() {
 			stop, err := fb.appendRow(fds, rr.Values())
 			if err != nil {
 				return nil, nil, err
 			}
 			if stop {
-				limited = true
 				break
 			}
 		}
-		if limited {
-			return fb.frame(), fb.firstFieldDescriptions, nil
-		}
 
+		// Close discards any rows left unread after hitting a limit one message
+		// at a time, so memory stays bounded. Draining instead of dropping the
+		// connection keeps the implicit transaction from being aborted.
 		if _, err := rr.Close(); err != nil {
 			return nil, nil, err
 		}

@@ -13,8 +13,8 @@ import (
 // TestFrameBuilder in sqleng already covers appendRow's byte-limit accounting
 // against mocked rows. This exercises the same limit over a real connection -
 // queryToDataFrame's mrr.NextResult()/rr.NextRow() loop against pgconn - to
-// guard against the early-stop-without-draining behavior ever regressing to
-// full buffering, or a protocol desync, at the wire level.
+// guard against the early stop ever regressing to full buffering, or a
+// protocol desync, at the wire level.
 func TestIntegrationResponseLimitBytes(t *testing.T) {
 	skipIntegrationTestInShortMode(t)
 
