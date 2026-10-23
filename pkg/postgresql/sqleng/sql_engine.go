@@ -230,7 +230,7 @@ func (e *DataSourceHandler) queryToDataFrame(ctx context.Context, query string) 
 		if len(fds) == 0 {
 			// A statement that does not return rows (INSERT/UPDATE/DELETE/SET/...).
 			if _, err := rr.Close(); err != nil {
-				return nil, nil, err
+				break
 			}
 			continue
 		}
@@ -249,7 +249,9 @@ func (e *DataSourceHandler) queryToDataFrame(ctx context.Context, query string) 
 		// at a time, so memory stays bounded. Draining instead of dropping the
 		// connection keeps the implicit transaction from being aborted.
 		if _, err := rr.Close(); err != nil {
-			return nil, nil, err
+			// mrr.Close() returns the same error and reads through to
+			// ReadyForQuery, so the connection can be returned to the pool.
+			break
 		}
 	}
 
