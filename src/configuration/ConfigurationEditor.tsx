@@ -93,7 +93,11 @@ export const PostgresConfigEditor = (props: DataSourcePluginOptionsEditorProps<P
 
   const onResponseLimitChanged = (event: SyntheticEvent<HTMLInputElement>) => {
     const raw = event.currentTarget.value;
-    updateDatasourcePluginJsonDataOption(props, 'responseLimitBytes', raw === '' ? undefined : Number(raw));
+    if (raw === '') {
+      updateDatasourcePluginJsonDataOption(props, 'responseLimitBytes', undefined);
+    } else if (/^\d+$/.test(raw)) {
+      updateDatasourcePluginJsonDataOption(props, 'responseLimitBytes', Number(raw));
+    }
   };
 
   const onTimeScaleDBChanged = (event: SyntheticEvent<HTMLInputElement>) => {
@@ -470,6 +474,7 @@ export const PostgresConfigEditor = (props: DataSourcePluginOptionsEditorProps<P
                 <Input
                   type="number"
                   min={0}
+                  step={1}
                   placeholder="0"
                   value={jsonData.responseLimitBytes ?? ''}
                   onChange={onResponseLimitChanged}
